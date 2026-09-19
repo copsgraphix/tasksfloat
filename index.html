@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tasks Note — a tiny tray-resident daily task app</title>
+<meta name="description" content="Summon it with a hotkey, jot down today's tasks, done. Free, offline, no account." />
+<style>
+  :root {
+    --paper-a: #fff3a3;
+    --paper-b: #ffe066;
+    --ink: #3a3220;
+    --desk: #2b2a28;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    min-height: 100svh;
+    background: radial-gradient(circle at 50% 0%, #3a3936, var(--desk));
+    color: #f4f1ea;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 20px 80px;
+  }
+  .note {
+    background: linear-gradient(160deg, var(--paper-a), var(--paper-b));
+    color: var(--ink);
+    max-width: 480px;
+    width: 100%;
+    border-radius: 24px;
+    padding: 36px 32px;
+    transform: rotate(-1.5deg);
+    box-shadow: 0 20px 40px -12px rgb(0 0 0 / 0.5), 0 4px 10px rgb(0 0 0 / 0.25);
+    text-align: center;
+  }
+  h1 {
+    font-size: 2rem;
+    margin: 0 0 8px;
+    letter-spacing: -0.02em;
+  }
+  p.tagline {
+    margin: 0 0 28px;
+    opacity: 0.75;
+    font-size: 1rem;
+  }
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #1f1c16;
+    color: #fff3a3;
+    font-size: 1.05rem;
+    font-weight: 600;
+    padding: 14px 28px;
+    border-radius: 12px;
+    text-decoration: none;
+    box-shadow: 0 6px 14px -4px rgb(0 0 0 / 0.4);
+    transition: transform 120ms ease, box-shadow 120ms ease;
+  }
+  .download-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 18px -4px rgb(0 0 0 / 0.45);
+  }
+  .platform-note {
+    margin-top: 10px;
+    font-size: 0.8rem;
+    opacity: 0.6;
+  }
+  .other-platforms {
+    margin-top: 26px;
+    padding-top: 20px;
+    border-top: 1px solid rgb(0 0 0 / 0.12);
+    font-size: 0.85rem;
+  }
+  .other-platforms a {
+    color: var(--ink);
+    opacity: 0.75;
+    text-decoration: underline;
+    margin: 0 6px;
+  }
+  .other-platforms a:hover { opacity: 1; }
+  footer {
+    margin-top: 32px;
+    font-size: 0.8rem;
+    opacity: 0.5;
+    text-align: center;
+  }
+  footer a { color: inherit; }
+</style>
+</head>
+<body>
+  <div class="note">
+    <h1>Tasks Note</h1>
+    <p class="tagline">A hotkey away. Type today's tasks, hit enter, done.</p>
+
+    <a id="primary-download" class="download-btn" href="#">
+      <span id="primary-label">Download</span>
+    </a>
+    <div class="platform-note" id="primary-sub"></div>
+
+    <div class="other-platforms" id="other-platforms"></div>
+  </div>
+
+  <footer>
+    <div>No account, no telemetry, no network calls except this page and an optional update check.</div>
+    <div><a href="https://github.com/copsgraphix/tasksfloat/releases/latest">See all downloads on GitHub →</a></div>
+  </footer>
+
+  <script>
+    const REPO = 'copsgraphix/tasksfloat';
+    const latest = (filename) => `https://github.com/${REPO}/releases/latest/download/${filename}`;
+
+    const platforms = {
+      windows: { label: 'Download for Windows', file: 'TasksNote-Windows-Setup.exe', sub: 'Windows 10/11 · .exe installer' },
+      macSilicon: { label: 'Download for Mac (Apple Silicon)', file: 'TasksNote-macOS-AppleSilicon.dmg', sub: 'M1/M2/M3/M4 Macs · .dmg' },
+      macIntel: { label: 'Download for Mac (Intel)', file: 'TasksNote-macOS-Intel.dmg', sub: 'Intel Macs · .dmg' },
+      linuxDeb: { label: 'Download for Linux (.deb)', file: 'TasksNote-Linux.deb', sub: 'Debian/Ubuntu-based' },
+      linuxAppImage: { label: 'Download for Linux (AppImage)', file: 'TasksNote-Linux.AppImage', sub: 'Most other distros' },
+    };
+
+    function detectPlatform() {
+      const ua = navigator.userAgent;
+      const platform = navigator.platform || '';
+      if (/Win/i.test(platform) || /Windows/i.test(ua)) return 'windows';
+      if (/Mac/i.test(platform) || /Macintosh/i.test(ua)) {
+        // Apple Silicon vs Intel can't be fully detected from JS alone on
+        // all browsers; default to Apple Silicon (current-gen) and let the
+        // Intel link live in "other downloads" below.
+        return 'macSilicon';
+      }
+      if (/Linux/i.test(platform) || /Linux/i.test(ua)) return 'linuxDeb';
+      return 'windows';
+    }
+
+    const primaryKey = detectPlatform();
+    const primary = platforms[primaryKey];
+
+    document.getElementById('primary-download').href = latest(primary.file);
+    document.getElementById('primary-label').textContent = primary.label;
+    document.getElementById('primary-sub').textContent = primary.sub;
+
+    const others = Object.entries(platforms).filter(([key]) => key !== primaryKey);
+    const otherEl = document.getElementById('other-platforms');
+    otherEl.innerHTML = 'Not your platform? ' + others
+      .map(([, p]) => `<a href="${latest(p.file)}">${p.label.replace('Download for ', '')}</a>`)
+      .join(' · ');
+  </script>
+</body>
+</html>
