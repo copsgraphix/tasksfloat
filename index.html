@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Tasks Note — a tiny tray-resident daily task app</title>
+<title>Task Float — a tiny tray-resident daily task app</title>
 <meta name="description" content="Summon it with a hotkey, jot down today's tasks, done. Free, offline, no account." />
 <style>
   :root {
@@ -68,6 +68,26 @@
     font-size: 0.8rem;
     opacity: 0.6;
   }
+  .mac-note {
+    margin-top: 16px;
+    padding: 12px 14px;
+    background: rgb(0 0 0 / 0.06);
+    border-radius: 10px;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    text-align: left;
+  }
+  .mac-note code {
+    display: block;
+    margin-top: 6px;
+    padding: 6px 8px;
+    background: #1f1c16;
+    color: #fff3a3;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
   .other-platforms {
     margin-top: 26px;
     padding-top: 20px;
@@ -92,13 +112,22 @@
 </head>
 <body>
   <div class="note">
-    <h1>Tasks Note</h1>
+    <h1>Task Float</h1>
     <p class="tagline">A hotkey away. Type today's tasks, hit enter, done.</p>
 
     <a id="primary-download" class="download-btn" href="#">
       <span id="primary-label">Download</span>
     </a>
     <div class="platform-note" id="primary-sub"></div>
+
+    <div class="mac-note" id="mac-note" style="display: none;">
+      <strong>macOS note:</strong> this app isn't notarized by Apple yet, so after opening the
+      .dmg and dragging it to Applications, macOS may say it "is damaged and can't be opened."
+      It isn't actually damaged — Gatekeeper is just rejecting an unsigned app. Fix it by opening
+      Terminal and running:
+      <code>xattr -cr /Applications/Task&nbsp;Float.app</code>
+      then open it again normally.
+    </div>
 
     <div class="other-platforms" id="other-platforms"></div>
   </div>
@@ -113,11 +142,11 @@
     const latest = (filename) => `https://github.com/${REPO}/releases/latest/download/${filename}`;
 
     const platforms = {
-      windows: { label: 'Download for Windows', file: 'TasksNote-Windows-Setup.exe', sub: 'Windows 10/11 · .exe installer' },
-      macSilicon: { label: 'Download for Mac (Apple Silicon)', file: 'TasksNote-macOS-AppleSilicon.dmg', sub: 'M1/M2/M3/M4 Macs · .dmg' },
-      macIntel: { label: 'Download for Mac (Intel)', file: 'TasksNote-macOS-Intel.dmg', sub: 'Intel Macs · .dmg' },
-      linuxDeb: { label: 'Download for Linux (.deb)', file: 'TasksNote-Linux.deb', sub: 'Debian/Ubuntu-based' },
-      linuxAppImage: { label: 'Download for Linux (AppImage)', file: 'TasksNote-Linux.AppImage', sub: 'Most other distros' },
+      windows: { label: 'Download for Windows', file: 'TaskFloat-Windows-Setup.exe', sub: 'Windows 10/11 · .exe installer' },
+      macSilicon: { label: 'Download for Mac (Apple Silicon)', file: 'TaskFloat-macOS-AppleSilicon.dmg', sub: 'M1/M2/M3/M4 Macs · .dmg' },
+      macIntel: { label: 'Download for Mac (Intel)', file: 'TaskFloat-macOS-Intel.dmg', sub: 'Intel Macs · .dmg' },
+      linuxDeb: { label: 'Download for Linux (.deb)', file: 'TaskFloat-Linux.deb', sub: 'Debian/Ubuntu-based' },
+      linuxAppImage: { label: 'Download for Linux (AppImage)', file: 'TaskFloat-Linux.AppImage', sub: 'Most other distros' },
     };
 
     function detectPlatform() {
@@ -140,6 +169,10 @@
     document.getElementById('primary-download').href = latest(primary.file);
     document.getElementById('primary-label').textContent = primary.label;
     document.getElementById('primary-sub').textContent = primary.sub;
+
+    if (primaryKey === 'macSilicon' || primaryKey === 'macIntel') {
+      document.getElementById('mac-note').style.display = 'block';
+    }
 
     const others = Object.entries(platforms).filter(([key]) => key !== primaryKey);
     const otherEl = document.getElementById('other-platforms');
